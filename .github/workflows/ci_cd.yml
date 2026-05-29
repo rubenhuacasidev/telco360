@@ -30,7 +30,7 @@ jobs:
         run: python scripts/retrain.py
 
       - name: Ejecutar tests
-        run: pytest tests/ -v
+        run: PYTHONPATH=. pytest tests/ -v
 
   # -----------------------------------------------------------------------
   # Job 2: Retrain & Deploy — solo en push a main
