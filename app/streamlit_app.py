@@ -175,9 +175,9 @@ def render_crm():
         with st.expander("Ver Directorio Completo de la Cartera"):
             df_sales = df_raw[['customerID', 'tenure', 'MonthlyCharges', 'TotalCharges', 'Contract']].copy()
             def calculate_risk(r):
-                if r['Contract'] == 'Month-to-month' and r['tenure'] < 12: return '🔴 Alta (Fuga)'
-                elif r['Contract'] == 'Month-to-month': return '🟡 Media'
-                else: return '🟢 Baja (Retenido)'
+                if r['Contract'] == 'Month-to-month' and r['tenure'] < 12: return 'Alta (Fuga)'
+                elif r['Contract'] == 'Month-to-month': return 'Media'
+                else: return 'Baja (Retenido)'
             df_sales['Prioridad de Llamada'] = df_sales.apply(calculate_risk, axis=1)
             df_sales = df_sales.sort_values(by=['Prioridad de Llamada', 'MonthlyCharges'], ascending=[False, False])
             
@@ -607,7 +607,7 @@ def render_mlops():
         github_repo = os.environ.get("GITHUB_REPO", "rubenhuacasidev/telco360")
         
         if not github_token:
-            st.error("⚠️ Falta el token de GitHub. Configura 'GITHUB_TOKEN' en las variables de entorno para activar esta función.")
+            st.error("Falta el token de GitHub. Configura 'GITHUB_TOKEN' en las variables de entorno para activar esta función.")
         else:
             with st.spinner("Desencadenando pipeline en GitHub Actions..."):
                 headers = {
@@ -621,7 +621,7 @@ def render_mlops():
                 try:
                     res = requests.post(url, headers=headers, json=payload, timeout=10)
                     if res.status_code == 204:
-                        st.success("🚀 ¡Pipeline MLOps disparado con éxito en GitHub Actions! Los modelos se actualizarán y Render redesplegará los servicios en breve.")
+                        st.success("¡Pipeline MLOps disparado con éxito en GitHub Actions! Los modelos se actualizarán y Render redesplegará los servicios en breve.")
                         st.markdown(f"[Ver estado del Workflow en GitHub](https://github.com/{github_repo}/actions)", unsafe_allow_html=True)
                     else:
                         st.error(f"Fallo al conectar con GitHub API (Status: {res.status_code}): {res.text}")
