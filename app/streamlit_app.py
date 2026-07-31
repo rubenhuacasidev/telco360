@@ -639,7 +639,7 @@ with st.sidebar:
     st.markdown("<div style='color: #71717a; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;'>Módulos del Sistema</div>", unsafe_allow_html=True)
     
     page = st.radio(
-        "",
+        "Navegación del sistema",
         ["Portal CRM (Ventas)", "Dashboard Directivo", "Centro MLOps & Dev"],
         label_visibility="collapsed"
     )
