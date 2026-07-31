@@ -1,170 +1,73 @@
-# Telco Customer Churn — MLOps Pipeline
+# Telco360 CRM & MLOps Dashboard
 
-Proyecto de Machine Learning con arquitectura MLOps para predecir la fuga de clientes (**Churn**) en una empresa de telecomunicaciones.
+Proyecto integral de Machine Learning con arquitectura orientada a producto SaaS. Diseñado para la segmentación de clientes de telecomunicaciones mediante aprendizaje no supervisado y la visualización de KPIs de negocio.
 
-## Arquitectura
+## Características Principales
 
-```
-notebook (experimentación)
-    → retrain.py (entrenamiento automático)
-    → model.pkl + scaler.pkl (artefactos)
-    → FastAPI (API de predicciones)
-    → Streamlit (interfaz visual)
-    → Docker (2 contenedores)
-    → Railway/Render (despliegue en la nube)
-    → GitHub Actions (CI/CD + autoentrenamiento)
-```
+*   **Portal CRM (Ventas):** Interfaz para agentes de retención. Permite ingresar datos de un cliente y obtener en tiempo real su segmento (VIP, Riesgo de Fuga, etc.) junto con recomendaciones accionables generadas por IA.
+*   **Dashboard Directivo:** Panel de control de alto nivel (KPIs, ratios de LTV/CAC simulados, distribuciones) con un diseño *Craft-First* inspirado en interfaces premium (SaaS).
+*   **Centro MLOps & Dev:** Consola de monitoreo en tiempo real de las métricas internas y externas del modelo (Silueta, Davies-Bouldin) y logs del sistema.
+*   **Motor de IA (Backend):** API robusta desarrollada en **FastAPI** que ejecuta modelos de *K-Means* y *PCA* preentrenados y procesa la inferencia.
 
-## Estructura del Proyecto
+## Arquitectura del Proyecto
 
-```
+```text
 Proyecto/
-├── data/                          # Dataset original
-├── models/                        # Artefactos de modelo (.pkl)
-├── notebooks/                     # Notebook de experimentación
 ├── app/
-│   ├── main.py                    # API FastAPI
-│   └── streamlit_app.py           # Frontend Streamlit
+│   ├── main.py                    # Backend FastAPI (API de Inferencia)
+│   └── streamlit_app.py           # Frontend Streamlit (UI Premium)
+├── data/                          # Datasets
+├── metrics/                       # JSONs de evaluación de modelos
+├── models/                        # Artefactos serializados (.pkl) 
+│   ├── preprocessor.pkl
+│   ├── pca_transformer.pkl
+│   └── kmeans_model.pkl
 ├── scripts/
-│   └── retrain.py                 # Script de reentrenamiento
-├── tests/
-│   └── test_api.py                # Tests de la API
-├── .github/workflows/
-│   └── ci_cd.yml                  # Pipeline CI/CD
-├── metrics/
-│   └── metrics.json               # Métricas del modelo
-├── Dockerfile                     # Docker para la API
-├── Dockerfile.streamlit           # Docker para el Frontend
-├── requirements.txt               # Dependencias de producción
-├── requirements-dev.txt           # Dependencias de desarrollo
-└── README.md
+│   └── train_unsupervised.py      # Script de MLOps para entrenamiento
+├── render.yaml                    # Infraestructura como Código (Blueprint)
+└── requirements.txt               # Dependencias consolidadas
 ```
 
-## Instalación Local
+## Ejecución Local
 
-### Prerrequisitos
-- Python 3.11+
-- pip
+1.  **Clonar el repositorio:**
+    ```bash
+    git clone https://github.com/rubenhuacasidev/telco360.git
+    cd telco360
+    ```
+2.  **Entorno Virtual (Opcional pero recomendado):**
+    ```bash
+    python -m venv venv
+    venv\Scripts\activate
+    ```
+3.  **Instalar Dependencias:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+4.  **Iniciar API (Backend):**
+    ```bash
+    uvicorn app.main:app --reload --port 8000
+    ```
+5.  **Iniciar Aplicación (Frontend):**
+    ```bash
+    streamlit run app/streamlit_app.py
+    ```
 
-### Pasos
+## Despliegue en Render (En 1 Clic)
 
-```bash
-# 1. Clonar el repositorio
-git clone <repo-url>
-cd Proyecto
+El proyecto incluye un archivo `render.yaml` preparado para Infraestructura como Código (IaC).
+Para desplegar gratuitamente ambos servicios conectados automáticamente:
 
-# 2. Crear entorno virtual
-python -m venv venv
-venv\Scripts\activate       # Windows
-# source venv/bin/activate  # Linux/Mac
+1. Ingresa al dashboard de [Render.com](https://render.com)
+2. Haz clic en **New +** y selecciona **Blueprint**
+3. Conecta tu cuenta de GitHub y elige este repositorio.
+4. Render levantará 2 *Web Services* (API y UI) en paralelo, vinculando las variables de entorno automáticamente.
 
-# 3. Instalar dependencias
-pip install -r requirements-dev.txt
+## Tecnologías Utilizadas
+*   **Backend:** FastAPI, Uvicorn, Python 3.10+
+*   **Frontend:** Streamlit, Altair (Visualización)
+*   **Machine Learning:** Scikit-Learn, Pandas, NumPy
+*   **Diseño:** UI/UX optimizada con principios Craft-First.
 
-# 4. Entrenar el modelo (genera models/ y metrics/)
-python scripts/retrain.py
-
-# 5. Ejecutar la API
-uvicorn app.main:app --reload
-
-# 6. En otra terminal, ejecutar Streamlit
-streamlit run app/streamlit_app.py
-```
-
-### Acceso local
-- **API FastAPI**: http://localhost:8000
-- **Documentación API (Swagger)**: http://localhost:8000/docs
-- **Streamlit Frontend**: http://localhost:8501
-
-## Endpoints de la API
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/` | Health check |
-| `GET` | `/health` | Estado del modelo y métricas |
-| `POST` | `/predict` | Predicción de churn |
-
-### Ejemplo de uso (curl)
-
-```bash
-curl -X POST http://localhost:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "gender": "Female",
-    "SeniorCitizen": 0,
-    "Partner": "Yes",
-    "Dependents": "No",
-    "tenure": 1,
-    "PhoneService": "No",
-    "MultipleLines": "No phone service",
-    "InternetService": "DSL",
-    "OnlineSecurity": "No",
-    "OnlineBackup": "Yes",
-    "DeviceProtection": "No",
-    "TechSupport": "No",
-    "StreamingTV": "No",
-    "StreamingMovies": "No",
-    "Contract": "Month-to-month",
-    "PaperlessBilling": "Yes",
-    "PaymentMethod": "Electronic check",
-    "MonthlyCharges": 29.85,
-    "TotalCharges": 29.85
-  }'
-```
-
-Respuesta:
-```json
-{
-  "churn": false,
-  "probabilidad": 0.4123
-}
-```
-
-## Docker
-
-### API (FastAPI)
-```bash
-docker build -t churn-api .
-docker run -p 8000:8000 churn-api
-```
-
-### Frontend (Streamlit)
-```bash
-docker build -f Dockerfile.streamlit -t churn-frontend .
-docker run -p 8501:8501 -e API_URL=http://host.docker.internal:8000 churn-frontend
-```
-
-## Despliegue en Railway/Render
-
-Se crean **2 servicios** desde el mismo repositorio:
-
-1. **Servicio API** → Dockerfile: `Dockerfile`
-2. **Servicio Frontend** → Dockerfile: `Dockerfile.streamlit`
-
-En el servicio Frontend, configurar la variable de entorno:
-```
-API_URL=https://<tu-api>.up.railway.app
-```
-
-## CI/CD con GitHub Actions
-
-El pipeline se ejecuta automáticamente:
-
-1. **En cada push**: ejecuta tests
-2. **En push a `main`**: reentrena el modelo, commitea artefactos, y Railway/Render hace redeploy automático
-
-## Tests
-
-```bash
-pytest tests/ -v
-```
-
-## Modelo
-
-- **Algoritmo**: Logistic Regression
-- **Hiperparámetros**: C=10, solver='lbfgs' (optimizados con GridSearchCV en el notebook)
-- **Métricas**: ~80% accuracy, ~0.60 F1-Score, ~0.83 ROC-AUC
-
-## Autor
-
-Proyecto académico — Aprendizaje Máquina, Semestre IX
+---
+*Proyecto académico — Aprendizaje Máquina, Semestre IX*
