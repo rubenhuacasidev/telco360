@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 if "api_url" not in st.session_state:
-    st.session_state.api_url = "http://127.0.0.1:8000"
+    st.session_state.api_url = os.environ.get("API_URL", "http://127.0.0.1:8000")
 if "last_segmentation" not in st.session_state:
     st.session_state.last_segmentation = None
 if "selected_customer" not in st.session_state:
