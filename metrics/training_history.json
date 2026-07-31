@@ -1,0 +1,15 @@
+[
+    {
+        "model": "K-Means",
+        "hyperparameters": {
+            "n_clusters": 4,
+            "random_state": 42
+        },
+        "silhouette_score": 0.2278,
+        "davies_bouldin_index": 1.7775,
+        "calinski_harabasz_index": 2445.481,
+        "samples": 7031,
+        "features_after_transform": 30,
+        "trained_at": "2026-07-31T09:27:57.823132+00:00"
+    }
+]

@@ -37,3 +37,7 @@ desktop.ini
 best_model.pkl
 best_rf_model.pkl
 model_results.csv
+scratch/
+.agents/
+skills-lock.json
+

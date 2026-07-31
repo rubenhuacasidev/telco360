@@ -1,0 +1,38 @@
+name: Telco360 MLOps Pipeline (Continuous Training)
+
+on:
+  push:
+    paths:
+      - 'data/WA_Fn-UseC_-Telco-Customer-Churn.csv'
+      - 'scripts/train_unsupervised.py'
+    branches:
+      - main
+
+jobs:
+  train-models:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐍 Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🤖 Run Unsupervised Training (K-Means)
+        run: |
+          python scripts/train_unsupervised.py
+
+      - name: 💾 Commit updated models and metrics
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🤖 MLOps: Reentrenamiento automático por nuevos datos"
+          file_pattern: 'models/*.pkl data/loyal_customers.csv metrics/unsupervised_metrics.json'
