@@ -601,27 +601,32 @@ def render_mlops():
         st.altair_chart(plot_clusters(df_viz, 'DBSCAN', 'DBSCAN (Density)', 'dark2'), use_container_width=True)
         st.caption("Silhouette Score: -0.05 (Descartado - Exceso de ruido)")
 
-    st.markdown("<div class='section-title'>3. Pipeline de Integración Continua (Simulador)</div>", unsafe_allow_html=True)
-    if st.button("Ejecutar Pipeline de Reentrenamiento (GitHub Actions Trigger)"):
-        terminal_placeholder = st.empty()
-        logs = [
-            "Initializing MLOps Pipeline...",
-            "Pulling latest customer data from Data Warehouse...",
-            "Data shape: (7043, 21). Found 11 missing values in TotalCharges. Imputing...",
-            "Running Preprocessor pipeline (StandardScaler + OneHotEncoder)...",
-            "Training Model: KMeans(n_clusters=4)...",
-            "Model convergence reached. Inertia: 43210.4",
-            "Evaluating: Silhouette Score 0.274. Threshold passed.",
-            "Exporting new artifacts to /models/kmeans_model.pkl",
-            "Publishing models to Production Edge Server...",
-            "Pipeline successfully completed in 4.3 seconds."
-        ]
-        out_text = ""
-        for line in logs:
-            out_text += f"[{time.strftime('%H:%M:%S')}] {line}\n"
-            terminal_placeholder.markdown(f"<div class='console-box'>{out_text}</div>", unsafe_allow_html=True)
-            time.sleep(0.4)
-        st.success("Modelo actualizado en producción exitosamente.")
+    st.markdown("<div class='section-title'>3. Pipeline de Integración Continua (Real CI/CD)</div>", unsafe_allow_html=True)
+    if st.button("Ejecutar Pipeline de Reentrenamiento (GitHub Actions)"):
+        github_token = os.environ.get("GITHUB_TOKEN")
+        github_repo = os.environ.get("GITHUB_REPO", "rubenhuacasidev/telco360")
+        
+        if not github_token:
+            st.error("⚠️ Falta el token de GitHub. Configura 'GITHUB_TOKEN' en las variables de entorno para activar esta función.")
+        else:
+            with st.spinner("Desencadenando pipeline en GitHub Actions..."):
+                headers = {
+                    "Authorization": f"Bearer {github_token}",
+                    "Accept": "application/vnd.github.v3+json",
+                    "X-GitHub-Api-Version": "2022-11-28"
+                }
+                payload = {"ref": "main"}
+                url = f"https://api.github.com/repos/{github_repo}/actions/workflows/mlops.yml/dispatches"
+                
+                try:
+                    res = requests.post(url, headers=headers, json=payload, timeout=10)
+                    if res.status_code == 204:
+                        st.success("🚀 ¡Pipeline MLOps disparado con éxito en GitHub Actions! Los modelos se actualizarán y Render redesplegará los servicios en breve.")
+                        st.markdown(f"[Ver estado del Workflow en GitHub](https://github.com/{github_repo}/actions)", unsafe_allow_html=True)
+                    else:
+                        st.error(f"Fallo al conectar con GitHub API (Status: {res.status_code}): {res.text}")
+                except Exception as e:
+                    st.error(f"Error HTTP al invocar el webhook: {e}")
 
 # ---------------------------------------------------------------------------
 # MENÚ LATERAL Y NAVEGACIÓN
